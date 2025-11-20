@@ -38,10 +38,9 @@ services:
 
   # MySQL Database
   mgthemes_mysql:
-    image: mysql:latest
+    image: mysql:8.0
     container_name: mgthemes_mysql
     restart: unless-stopped
-    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
