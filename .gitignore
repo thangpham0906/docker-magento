@@ -1,0 +1,24 @@
+# Git ignore for Magento 2 Docker setup
+.env
+.DS_Store
+*.log
+
+# Docker volumes
+/src/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# SSL certificates
+/docker/ssl/*.key
+/docker/ssl/*.crt
+/docker/ssl/*.pem
+
+# Backup files
+*.bak
+*.backup
+backup/

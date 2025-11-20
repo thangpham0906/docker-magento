@@ -1,0 +1,64 @@
+# docker-compose.override.yml - Development Environment
+# This file is automatically loaded by docker-compose for development
+version: '3.8'
+
+services:
+  mgthemes_nginx:
+    environment:
+      - APP_ENV=dev
+    volumes:
+      # Development: cached mount for better performance on Mac/Windows
+      - ./src:/var/www/html:cached
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+
+  mgthemes_php:
+    environment:
+      # Development environment variables
+      - APP_ENV=dev
+      - PHP_IDE_CONFIG=serverName=mgthemes.local
+      - XDEBUG_MODE=${XDEBUG_MODE:-debug}
+      - XDEBUG_CLIENT_HOST=host.docker.internal
+      - XDEBUG_CLIENT_PORT=${XDEBUG_PORT:-9003}
+      - MAGE_MODE=developer
+      - COMPOSER_MEMORY_LIMIT=-1
+    volumes:
+      # Development: cached mount for better performance
+      - ./src:/var/www/html:cached
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./docker/php/php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
+      # Composer cache để tăng tốc độ cài đặt
+      - mgthemes_composer_cache:/root/.composer
+
+  mgthemes_mysql:
+    environment:
+      # Development database settings
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-magento}
+      - MYSQL_USER=${MYSQL_USER:-magento}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-magento}
+    ports:
+      # Expose MySQL port for local connections
+      - "3306:3306"
+
+  mgthemes_redis:
+    ports:
+      # Expose Redis port for local connections
+      - "6379:6379"
+
+  mgthemes_opensearch:
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PASSWORD:-Admin@123}
+    ports:
+      # Expose OpenSearch ports for local connections
+      - "9200:9200"
+      - "9600:9600"
+
+volumes:
+  mgthemes_composer_cache:
+    name: mgthemes_composer_cache
