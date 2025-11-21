@@ -53,7 +53,7 @@ if [ ! -f "./src/composer.json" ]; then
         composer config -g http-basic.repo.magento.com '$COMPOSER_USER' '$COMPOSER_PASS' && \
         composer config -g process-timeout 2000 && \
         composer config -g repos.packagist composer https://packagist.org && \
-        COMPOSER_PROCESS_TIMEOUT=2000 composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 . --no-interaction
+        COMPOSER_PROCESS_TIMEOUT=2000 composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 .
     "
 
     echo ""
