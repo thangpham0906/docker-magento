@@ -41,10 +41,10 @@ if [ ! -f "./src/composer.json" ]; then
     echo "Using Magento Marketplace credentials:"
     echo "Public Key: $COMPOSER_USER"
     
-    # Remove initial README file if exists
-    if [ -f "./src/README_INIT.md" ]; then
-        rm -f ./src/README_INIT.md
-    fi
+    # Clean src directory completely
+    echo "🧹 Cleaning src directory..."
+    sudo rm -rf ./src/*
+    sudo rm -rf ./src/.[!.]*
     
     # Configure Composer authentication and create project in container
     docker compose exec -T mgthemes_php bash -c "
@@ -94,6 +94,9 @@ if [ ! -f "./src/composer.json" ]; then
     "
 else
     echo "⚠️  Magento already installed (composer.json exists)"
+    echo ""
+    echo "To reinstall, run: rm -rf ./src/* && ./bin/magento/install.sh"
+    exit 0
 fi
 
 echo ""
