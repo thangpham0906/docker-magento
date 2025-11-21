@@ -15,7 +15,7 @@ services:
     environment:
       # Development environment variables
       - APP_ENV=dev
-      - PHP_IDE_CONFIG=serverName=mgthemes.local
+      - PHP_IDE_CONFIG=serverName=mgthemes.localhost
       - XDEBUG_MODE=${XDEBUG_MODE:-debug}
       - XDEBUG_CLIENT_HOST=host.docker.internal
       - XDEBUG_CLIENT_PORT=${XDEBUG_PORT:-9003}

@@ -29,11 +29,11 @@ docker compose ps
 
 echo ""
 echo "✅ Development environment is ready!"
-echo "🌐 Website: http://mgthemes.local"
+echo "🌐 Website: http://mgthemes.localhost"
 echo "🗄️  phpMyAdmin: http://localhost:8080"
 echo "🔍 OpenSearch: http://localhost:9200"
 echo ""
 echo "📝 Next steps:"
-echo "   1. Add 'mgthemes.local' to your /etc/hosts file pointing to 127.0.0.1"
+echo "   1. Add 'mgthemes.localhost' to your /etc/hosts file pointing to 127.0.0.1"
 echo "   2. Access the container: docker compose exec mgthemes_php bash"
 echo "   3. Install Magento in the src/ directory"

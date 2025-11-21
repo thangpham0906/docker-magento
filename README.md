@@ -82,7 +82,7 @@ nano .env
 sudo nano /etc/hosts
 
 # Thêm dòng:
-127.0.0.1 mgthemes.local
+127.0.0.1 mgthemes.localhost
 ```
 
 **Production (VPS):**
@@ -111,7 +111,7 @@ docker compose up -d --build
 - Error reporting enabled
 
 **Truy cập:**
-- Website: http://mgthemes.local
+- Website: http://mgthemes.localhost
 - phpMyAdmin: http://localhost:8080
 - OpenSearch: http://localhost:9200
 - MySQL: localhost:3306

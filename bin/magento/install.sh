@@ -20,7 +20,7 @@ if [ -f .env ]; then
 fi
 
 # Set default values if not in .env
-MAGENTO_BASE_URL=${MAGENTO_BASE_URL:-http://mgthemes.local/}
+MAGENTO_BASE_URL=${MAGENTO_BASE_URL:-http://mgthemes.localhost/}
 MAGENTO_BACKEND_FRONTNAME=${MAGENTO_BACKEND_FRONTNAME:-admin}
 MAGENTO_ADMIN_FIRSTNAME=${MAGENTO_ADMIN_FIRSTNAME:-Admin}
 MAGENTO_ADMIN_LASTNAME=${MAGENTO_ADMIN_LASTNAME:-User}
@@ -92,21 +92,25 @@ if [ ! -f "./src/composer.json" ]; then
             --page-cache-redis-db=1 \
             --backend-frontname='$MAGENTO_BACKEND_FRONTNAME'
     "
+
+    # add file auth.json
+    echo ""
+    echo "📄 Creating auth.json for Composer authentication..."
+    docker compose exec -T mgthemes_php bash -c "
+        cd /var/www/html && \
+        echo '{\"http-basic\": {\"repo.magento.com\": {\"username\": \"$COMPOSER_USER\", \"password\": \"$COMPOSER_PASS\"}}}' > auth.json && \
+        chmod 600 auth.json
+    "
+
+    # datasample installation can be added here if needed
+    bin/magento sampledata:deploy
+
 else
     echo "⚠️  Magento already installed (composer.json exists)"
     echo ""
     echo "To reinstall, run: rm -rf ./src/* && ./bin/magento/install.sh"
     exit 0
 fi
-
-# add file auth.json
-echo ""
-echo "📄 Creating auth.json for Composer authentication..."
-docker compose exec -T mgthemes_php bash -c "
-    cd /var/www/html && \
-    echo '{\"http-basic\": {\"repo.magento.com\": {\"username\": \"$COMPOSER_USER\", \"password\": \"$COMPOSER_PASS\"}}}' > auth.json && \
-    chmod 600 auth.json
-"
 
 echo ""
 echo "🔐 Setting permissions..."
