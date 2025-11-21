@@ -47,6 +47,7 @@ services:
     volumes:
       - mgthemes_mysql_data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - mgthemes_network
 

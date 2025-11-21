@@ -2,8 +2,17 @@
 # Script to install Magento 2.4.8-p3
 # Run this script from the HOST machine (not inside container)
 
+# Get the project root directory (2 levels up from this script)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
 echo "📦 Magento 2.4.8-p3 Installation Script"
 echo "========================================"
+echo "Project root: $PROJECT_ROOT"
+echo ""
+
+# Change to project root directory
+cd "$PROJECT_ROOT"
 
 # Load .env file if exists
 if [ -f .env ]; then
