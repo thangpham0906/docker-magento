@@ -4,28 +4,6 @@
 echo "📦 Magento 2.4.8-p3 Installation Script"
 echo "========================================"
 
-# Check if running inside container
-if [ ! -f /.dockerenv ]; then
-    echo "⚠️  This script should be run inside the PHP container"
-    echo "Run: docker compose exec mgthemes_php bash"
-    echo "Then run: bash /var/www/html/install-magento.sh"
-    exit 1
-fi
-
-# Check if Magento is already installed
-if [ -f "/var/www/html/app/etc/env.php" ]; then
-    echo "⚠️  Magento appears to be already installed."
-    read -p "Do you want to reinstall? (yes/no): " REINSTALL
-    if [ "$REINSTALL" != "yes" ]; then
-        exit 0
-    fi
-fi
-
-# Load environment variables (if available)
-if [ -f "/var/www/html/.env" ]; then
-    source /var/www/html/.env
-fi
-
 # Set default values if not in .env
 MAGENTO_BASE_URL=${MAGENTO_BASE_URL:-http://mgthemes.local/}
 MAGENTO_BACKEND_FRONTNAME=${MAGENTO_BACKEND_FRONTNAME:-admin}
@@ -34,25 +12,24 @@ MAGENTO_ADMIN_LASTNAME=${MAGENTO_ADMIN_LASTNAME:-User}
 MAGENTO_ADMIN_EMAIL=${MAGENTO_ADMIN_EMAIL:-admin@mgthemes.info}
 MAGENTO_ADMIN_USER=${MAGENTO_ADMIN_USER:-admin}
 MAGENTO_ADMIN_PASSWORD=${MAGENTO_ADMIN_PASSWORD:-Admin@123456}
+COMPOSER_USER=${COMPOSER_AUTH_USERNAME:-your_public_key}
+COMPOSER_PASS=${COMPOSER_AUTH_PASSWORD:-your_private_key}
 
 echo ""
 echo "🔧 Installing Magento 2.4.8-p3..."
 echo ""
 
-cd /var/www/html
+cd src/
 
 # Check if composer.json exists
 if [ ! -f "composer.json" ]; then
     echo "📥 Creating Magento project via Composer..."
     
-    # Ask for Magento credentials
-    echo "Please enter your Magento Marketplace credentials:"
-    read -p "Public Key: " COMPOSER_USER
-    read -sp "Private Key: " COMPOSER_PASS
-    echo ""
-    
     # Configure Composer authentication
     composer config -g http-basic.repo.magento.com "$COMPOSER_USER" "$COMPOSER_PASS"
+    
+    echo "Using Magento Marketplace credentials:"
+    echo "Public Key: $COMPOSER_USER"
     
     # Create Magento project
     composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 .
