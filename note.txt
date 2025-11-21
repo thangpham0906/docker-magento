@@ -15,3 +15,7 @@ NOTE: Please disregard the message                                 |
 #11 44.03   |       You should add "extension=xdebug.so" to php.ini                |
 #11 44.03   |   that is emitted by the PECL installer. This does not work for      |
 #11 44.04   |   Xdebug.
+
+docker compose exec -i -e XDEBUG_MODE=off mgthemes_php bash
+bin/magento sampledata:deploy
+

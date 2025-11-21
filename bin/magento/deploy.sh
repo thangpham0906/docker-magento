@@ -38,6 +38,10 @@ if [[ $deploy_mode -eq $QUICK_MODE ]]; then
     echo "Compiling dependency injection configuration..."
     docker compose exec -T -e XDEBUG_MODE=off mgthemes_php php bin/magento setup:di:compile
 
+    # Set permissions
+    echo "Setting permissions..."
+    docker compose exec -T mgthemes_php bash -c "chmod -R 775 var generated pub/static pub/media app/etc 2>/dev/null || true"
+
     # Final Cache Flush
     echo "Final cache flush..."
     docker compose exec -T mgthemes_php php bin/magento cache:clean
@@ -60,6 +64,10 @@ elif [[ $deploy_mode -eq $FULL_MODE ]]; then
     echo "Reindexing..."
     docker compose exec -T -e XDEBUG_MODE=off mgthemes_php php bin/magento indexer:reindex
 
+    # Set permissions
+    echo "Setting permissions..."
+    docker compose exec -T mgthemes_php bash -c "chmod -R 775 var generated pub/static pub/media app/etc 2>/dev/null || true"
+
     # Final Cache Flush
     echo "Final cache flush..."
     docker compose exec -T mgthemes_php php bin/magento cache:flush
@@ -68,7 +76,7 @@ else
     # Default mode - just clean cache
     echo "Running mode 1 - Default"
     echo "Cleaning cache..."
-    docker compose exec -T mgthemes_php bash -c "cd /var/www/html && rm -rf pub/static/frontend/Laybyland/layup/* var/view_preprocessed pub/static/_cache/merged/*"
+    docker compose exec -T mgthemes_php bash -c "cd /var/www/html && rm -rf pub/static/frontend/* var/view_preprocessed pub/static/_cache/merged/*"
     docker compose exec -T mgthemes_php php bin/magento cache:flush
     docker compose exec -T mgthemes_php php bin/magento cache:clean
 fi

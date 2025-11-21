@@ -99,6 +99,15 @@ else
     exit 0
 fi
 
+# add file auth.json
+echo ""
+echo "📄 Creating auth.json for Composer authentication..."
+docker compose exec -T mgthemes_php bash -c "
+    cd /var/www/html && \
+    echo '{\"http-basic\": {\"repo.magento.com\": {\"username\": \"$COMPOSER_USER\", \"password\": \"$COMPOSER_PASS\"}}}' > auth.json && \
+    chmod 600 auth.json
+"
+
 echo ""
 echo "🔐 Setting permissions..."
 docker compose exec -T -e XDEBUG_MODE=off mgthemes_php bash -c "
