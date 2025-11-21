@@ -58,7 +58,7 @@ elif [[ $deploy_mode -eq $FULL_MODE ]]; then
 
     # Reindex
     echo "Reindexing..."
-#    docker compose exec -T -e XDEBUG_MODE=off mgthemes_php php bin/magento indexer:reindex
+    docker compose exec -T -e XDEBUG_MODE=off mgthemes_php php bin/magento indexer:reindex
 
     # Final Cache Flush
     echo "Final cache flush..."
