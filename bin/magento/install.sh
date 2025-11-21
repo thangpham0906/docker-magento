@@ -46,11 +46,14 @@ if [ ! -f "./src/composer.json" ]; then
     sudo rm -rf ./src/*
     sudo rm -rf ./src/.[!.]*
     
-    # Configure Composer authentication and create project in container
+    # Configure Composer authentication and create project in container with increased timeout
+    echo "📥 Downloading Magento (this may take several minutes)..."
     docker compose exec -T mgthemes_php bash -c "
         cd /var/www/html && \
         composer config -g http-basic.repo.magento.com '$COMPOSER_USER' '$COMPOSER_PASS' && \
-        composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 . --no-interaction
+        composer config -g process-timeout 2000 && \
+        composer config -g repos.packagist composer https://packagist.org && \
+        COMPOSER_PROCESS_TIMEOUT=2000 composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 . --no-interaction
     "
 
     echo ""
