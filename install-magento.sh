@@ -1,8 +1,14 @@
 #!/bin/bash
 # Script to install Magento 2.4.8-p3
+# Run this script from the HOST machine (not inside container)
 
 echo "📦 Magento 2.4.8-p3 Installation Script"
 echo "========================================"
+
+# Load .env file if exists
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
 
 # Set default values if not in .env
 MAGENTO_BASE_URL=${MAGENTO_BASE_URL:-http://mgthemes.local/}
@@ -19,76 +25,98 @@ echo ""
 echo "🔧 Installing Magento 2.4.8-p3..."
 echo ""
 
-cd src/
-
-# Check if composer.json exists
-if [ ! -f "composer.json" ]; then
+# Check if composer.json exists in src/
+if [ ! -f "./src/composer.json" ]; then
     echo "📥 Creating Magento project via Composer..."
-    
-    # Configure Composer authentication
-    composer config -g http-basic.repo.magento.com "$COMPOSER_USER" "$COMPOSER_PASS"
     
     echo "Using Magento Marketplace credentials:"
     echo "Public Key: $COMPOSER_USER"
     
-    # Create Magento project
-    composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 .
+    # Remove initial README file if exists
+    if [ -f "./src/README_INIT.md" ]; then
+        rm -f ./src/README_INIT.md
+    fi
+    
+    # Configure Composer authentication and create project in container
+    docker compose exec -T mgthemes_php bash -c "
+        cd /var/www/html && \
+        composer config -g http-basic.repo.magento.com '$COMPOSER_USER' '$COMPOSER_PASS' && \
+        composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.8-p3 . --no-interaction
+    "
+
+    echo ""
+    echo "⚙️  Running Magento setup:install..."
+    echo ""
+
+    # Run Magento setup in container (with xdebug disabled for performance)
+    docker compose exec -T -e XDEBUG_MODE=off mgthemes_php bash -c "
+        cd /var/www/html && \
+        php bin/magento setup:install \
+            --base-url='$MAGENTO_BASE_URL' \
+            --db-host=mgthemes_mysql \
+            --db-name='${MYSQL_DATABASE:-magento}' \
+            --db-user='${MYSQL_USER:-magento}' \
+            --db-password='${MYSQL_PASSWORD:-magento}' \
+            --admin-firstname='$MAGENTO_ADMIN_FIRSTNAME' \
+            --admin-lastname='$MAGENTO_ADMIN_LASTNAME' \
+            --admin-email='$MAGENTO_ADMIN_EMAIL' \
+            --admin-user='$MAGENTO_ADMIN_USER' \
+            --admin-password='$MAGENTO_ADMIN_PASSWORD' \
+            --language=en_US \
+            --currency=USD \
+            --timezone=Asia/Ho_Chi_Minh \
+            --use-rewrites=1 \
+            --search-engine=opensearch \
+            --opensearch-host=mgthemes_opensearch \
+            --opensearch-port=9200 \
+            --opensearch-index-prefix=magento2 \
+            --opensearch-enable-auth=0 \
+            --session-save=redis \
+            --session-save-redis-host=mgthemes_redis \
+            --session-save-redis-port=6379 \
+            --session-save-redis-db=2 \
+            --cache-backend=redis \
+            --cache-backend-redis-server=mgthemes_redis \
+            --cache-backend-redis-db=0 \
+            --page-cache=redis \
+            --page-cache-redis-server=mgthemes_redis \
+            --page-cache-redis-db=1 \
+            --backend-frontname='$MAGENTO_BACKEND_FRONTNAME'
+    "
+else
+    echo "⚠️  Magento already installed (composer.json exists)"
 fi
 
 echo ""
-echo "⚙️  Running Magento setup:install..."
-echo ""
-
-php bin/magento setup:install \
-    --base-url="$MAGENTO_BASE_URL" \
-    --db-host=mgthemes_mysql \
-    --db-name="${MYSQL_DATABASE:-magento}" \
-    --db-user="${MYSQL_USER:-magento}" \
-    --db-password="${MYSQL_PASSWORD:-magento}" \
-    --admin-firstname="$MAGENTO_ADMIN_FIRSTNAME" \
-    --admin-lastname="$MAGENTO_ADMIN_LASTNAME" \
-    --admin-email="$MAGENTO_ADMIN_EMAIL" \
-    --admin-user="$MAGENTO_ADMIN_USER" \
-    --admin-password="$MAGENTO_ADMIN_PASSWORD" \
-    --language=en_US \
-    --currency=USD \
-    --timezone=Asia/Ho_Chi_Minh \
-    --use-rewrites=1 \
-    --search-engine=opensearch \
-    --opensearch-host=mgthemes_opensearch \
-    --opensearch-port=9200 \
-    --opensearch-index-prefix=magento2 \
-    --opensearch-enable-auth=0 \
-    --session-save=redis \
-    --session-save-redis-host=mgthemes_redis \
-    --session-save-redis-port=6379 \
-    --session-save-redis-db=2 \
-    --cache-backend=redis \
-    --cache-backend-redis-server=mgthemes_redis \
-    --cache-backend-redis-db=0 \
-    --page-cache=redis \
-    --page-cache-redis-server=mgthemes_redis \
-    --page-cache-redis-db=1 \
-    --backend-frontname="$MAGENTO_BACKEND_FRONTNAME"
-
-echo ""
 echo "🔐 Setting permissions..."
-find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
-find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
-chown -R www-data:www-data .
-chmod u+x bin/magento
+docker compose exec -T -e XDEBUG_MODE=off mgthemes_php bash -c "
+    cd /var/www/html && \
+    find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} + 2>/dev/null || true && \
+    find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} + 2>/dev/null || true && \
+    chown -R www-data:www-data . && \
+    chmod u+x bin/magento
+"
 
 echo ""
 echo "🎨 Deploying static content..."
-php bin/magento setup:static-content:deploy -f
+docker compose exec -T -e XDEBUG_MODE=off mgthemes_php bash -c "
+    cd /var/www/html && \
+    php bin/magento setup:static-content:deploy -f
+"
 
 echo ""
 echo "📊 Reindexing..."
-php bin/magento indexer:reindex
+docker compose exec -T -e XDEBUG_MODE=off mgthemes_php bash -c "
+    cd /var/www/html && \
+    php bin/magento indexer:reindex
+"
 
 echo ""
 echo "🧹 Clearing cache..."
-php bin/magento cache:flush
+docker compose exec -T -e XDEBUG_MODE=off mgthemes_php bash -c "
+    cd /var/www/html && \
+    php bin/magento cache:flush
+"
 
 echo ""
 echo "✅ Magento installation completed!"

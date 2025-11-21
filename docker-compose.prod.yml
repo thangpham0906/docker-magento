@@ -1,6 +1,5 @@
 # docker-compose.prod.yml - Production Environment
-# Use: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-version: '3.8'
+# Use: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 services:
   mgthemes_nginx:

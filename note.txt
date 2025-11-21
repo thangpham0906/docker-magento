@@ -9,3 +9,9 @@ dùng docker-compose.override.yml cho môi trường dev
 dùng docker-compose.prod.yml cho môi trường prod
 trong file yml này chỉ định các biến môi trường cần thiết cho từng môi trường và mount volume phù hợp, tên đặt thêm tiền tố trước để phân biệt chỉ dành cho dự source này
 Thiết lập Magento 2.4.8-p3 với Docker, sử dụng MySQL latest, Redis, OpenSearch, phpMyAdmin và PHP 8.4 với hai môi trường (dev và prod) trên VPS với host mgthemes.info và IP 157.20.83.37 dưới localhost mgthemes.local
+
+
+NOTE: Please disregard the message                                 |
+#11 44.03   |       You should add "extension=xdebug.so" to php.ini                |
+#11 44.03   |   that is emitted by the PECL installer. This does not work for      |
+#11 44.04   |   Xdebug.
